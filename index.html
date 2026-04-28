@@ -1,261 +1,224 @@
-<!DOCTYPE html>
-<html lang="zh-Hant">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>互動式數字聽力練習</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap');
-        
-        body {
-            font-family: 'Noto Sans TC', sans-serif;
-            background-color: #f0f4f8;
-        }
-
-        .number-card {
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-
-        .number-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-        }
-
-        .correct {
-            background-color: #d1fae5 !important;
-            border-color: #10b981 !important;
-            color: #065f46 !important;
-        }
-
-        .wrong {
-            background-color: #fee2e2 !important;
-            border-color: #ef4444 !important;
-            color: #991b1b !important;
-        }
-
-        .pulse-animation {
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-
-        .hidden-btn {
-            display: none;
-        }
-    </style>
-</head>
-<body class="min-h-screen flex flex-col items-center py-10 px-4">
-
-    <div class="max-w-2xl w-full bg-white rounded-3xl shadow-xl p-8">
-        <h1 class="text-3xl font-bold text-center text-indigo-700 mb-2">數字聽力挑戰</h1>
-        <p class="text-center text-gray-500 mb-6">點擊播放按鈕開始，或使用重複按鈕再聽一次</p>
-
-        <!-- 計分板 -->
-        <div class="grid grid-cols-2 gap-4 mb-8">
-            <div class="bg-green-50 border border-green-200 rounded-2xl p-4 text-center">
-                <p class="text-green-600 text-sm font-medium">正確</p>
-                <p id="correctScore" class="text-3xl font-bold text-green-700">0</p>
-            </div>
-            <div class="bg-red-50 border border-red-200 rounded-2xl p-4 text-center">
-                <p class="text-red-600 text-sm font-medium">錯誤</p>
-                <p id="wrongScore" class="text-3xl font-bold text-red-700">0</p>
-            </div>
-        </div>
-
-        <!-- 播放控制區 -->
-        <div class="flex flex-col items-center justify-center bg-indigo-50 rounded-2xl p-8 mb-10 border-2 border-dashed border-indigo-200">
-            <div class="flex items-center gap-6 mb-4">
-                <!-- 再次發音按鈕 -->
-                <button id="repeatBtn" class="bg-amber-500 hover:bg-amber-600 text-white p-4 rounded-full shadow-md transition-all active:scale-95 hidden-btn" title="再次發音">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                    </svg>
-                </button>
-
-                <!-- 主播放按鈕 -->
-                <button id="playBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white p-6 rounded-full shadow-lg transition-all active:scale-95">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                </button>
-            </div>
-            <p id="statusHint" class="text-indigo-800 font-medium">點擊播放按鈕開始測驗</p>
-        </div>
-
-        <!-- 數字選項區 -->
-        <div class="grid grid-cols-2 sm:grid-cols-3 gap-4" id="optionsGrid">
-            <!-- 由 JavaScript 動態生成 -->
-        </div>
-
-        <!-- 回饋訊息 -->
-        <div id="feedback" class="mt-8 text-center text-xl font-bold h-8 transition-opacity duration-300 opacity-0">
-            答對了！
-        </div>
-
-        <!-- 重新開始 -->
-        <div class="mt-8 flex justify-center">
-            <button id="resetBtn" class="text-indigo-600 hover:text-indigo-800 underline font-medium">
-                重新開始挑戰並清空分數
-            </button>
-        </div>
+<!doctype html>
+<html lang="zh-TW" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Number Listening Practice</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&amp;display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Nunito', sans-serif; }
+    @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+    @keyframes shake { 0%,100% { transform: translateX(0); } 20%,60% { transform: translateX(-6px); } 40%,80% { transform: translateX(6px); } }
+    @keyframes celebrate { 0% { transform: scale(1); } 50% { transform: scale(1.15); } 100% { transform: scale(1); } }
+    .pop-in { animation: popIn 0.35s ease-out; }
+    .shake { animation: shake 0.4s ease; }
+    .celebrate { animation: celebrate 0.4s ease; }
+    .option-btn { transition: all 0.2s ease; }
+    .option-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.15); }
+    .option-btn:active { transform: translateY(0); }
+    .progress-fill { transition: width 0.5s ease; }
+  </style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full">
+  <div id="app" class="h-full w-full overflow-auto" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);"><!-- Header -->
+   <div class="text-center pt-8 pb-4 px-4">
+    <h1 id="main-title" class="text-3xl md:text-4xl font-900 text-white tracking-tight">🎧 數字聽力練習</h1>
+    <p class="text-slate-400 mt-2 text-sm">聽發音，選出正確的數字</p>
+   </div><!-- Score & Progress -->
+   <div class="max-w-md mx-auto px-6 mb-4">
+    <div class="flex justify-between text-sm text-slate-400 mb-2"><span>第 <span id="q-current" class="text-amber-400 font-bold">1</span> / <span id="q-total" class="text-amber-400 font-bold">9</span> 題</span> <span>✅ <span id="score" class="text-emerald-400 font-bold">0</span></span>
     </div>
+    <div class="w-full h-2 bg-slate-700 rounded-full overflow-hidden">
+     <div id="progress-bar" class="progress-fill h-full bg-gradient-to-r from-amber-400 to-orange-500 rounded-full" style="width:0%"></div>
+    </div>
+   </div><!-- Play Area -->
+   <div id="play-area" class="max-w-md mx-auto px-6"><!-- Play Button -->
+    <div class="flex justify-center my-6"><button id="play-btn" onclick="playAudio()" class="w-24 h-24 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-500/30 hover:shadow-amber-500/50 transition-all hover:scale-105 active:scale-95"> <i data-lucide="volume-2" style="width:40px;height:40px;color:#0f172a;stroke-width:2.5;"></i> </button>
+    </div>
+    <p class="text-center text-slate-500 text-xs mb-6">點擊上方按鈕聽發音</p><!-- Options -->
+    <div id="options" class="grid grid-cols-2 gap-3 mb-6"></div><!-- Feedback -->
+    <div id="feedback" class="text-center h-10 flex items-center justify-center"></div>
+   </div><!-- Result Screen -->
+   <div id="result-screen" class="hidden max-w-md mx-auto px-6 text-center py-10">
+    <div class="text-6xl mb-4">
+     🎉
+    </div>
+    <h2 class="text-2xl font-800 text-white mb-2">練習完成！</h2>
+    <p class="text-slate-300 text-lg mb-1">你的成績：<span id="final-score" class="text-amber-400 font-bold"></span> / <span id="final-total" class="text-amber-400 font-bold"></span></p>
+    <p id="final-msg" class="text-slate-400 mb-8"></p><button onclick="restartGame()" class="px-8 py-3 bg-gradient-to-r from-amber-400 to-orange-500 text-slate-900 font-bold rounded-xl hover:scale-105 transition-transform active:scale-95">再練一次</button>
+   </div>
+  </div>
+  <script>
+const NUMBERS = [
+  { word: 'ten', value: 10, display: '10' },
+  { word: 'twenty', value: 20, display: '20' },
+  { word: 'thirty', value: 30, display: '30' },
+  { word: 'forty', value: 40, display: '40' },
+  { word: 'fifty', value: 50, display: '50' },
+  { word: 'twenty-five', value: 25, display: '25' },
+  { word: 'thirty-five', value: 35, display: '35' },
+  { word: 'forty-five', value: 45, display: '45' },
+  { word: 'fifty-five', value: 55, display: '55' }
+];
 
-    <script>
-        const numbers = [
-            "ten", "twenty", "thirty", "forty", "fifty",
-            "twenty-five", "thirty-five", "forty-five", "fifty-five"
-        ];
+let questions = [], currentQ = 0, score = 0, answered = false;
 
-        let currentTarget = "";
-        let isPlaying = false;
-        let canGuess = false;
-        let score = { correct: 0, wrong: 0 };
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+}
 
-        const playBtn = document.getElementById('playBtn');
-        const repeatBtn = document.getElementById('repeatBtn');
-        const statusHint = document.getElementById('statusHint');
-        const optionsGrid = document.getElementById('optionsGrid');
-        const feedback = document.getElementById('feedback');
-        const resetBtn = document.getElementById('resetBtn');
-        const correctScoreEl = document.getElementById('correctScore');
-        const wrongScoreEl = document.getElementById('wrongScore');
+function speak(text) {
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'en-US'; u.rate = 0.85; u.pitch = 1;
+  window.speechSynthesis.speak(u);
+}
 
-        // 初始化選項
-        function initOptions() {
-            optionsGrid.innerHTML = '';
-            numbers.forEach(num => {
-                const button = document.createElement('div');
-                button.className = 'number-card bg-white border-2 border-gray-200 rounded-xl p-4 text-center font-bold text-gray-700 text-lg';
-                button.textContent = num;
-                button.dataset.value = num;
-                button.onclick = () => checkAnswer(num, button);
-                optionsGrid.appendChild(button);
-            });
-        }
+function playAudio() {
+  if (questions.length === 0) return;
+  speak(questions[currentQ].word);
+}
 
-        // 更新分數顯示
-        function updateScoreDisplay() {
-            correctScoreEl.textContent = score.correct;
-            wrongScoreEl.textContent = score.wrong;
-        }
+function generateOptions(correct) {
+  const opts = [correct];
+  const pool = NUMBERS.filter(n => n.value !== correct.value);
+  const shuffled = shuffle(pool);
+  for (let i = 0; opts.length < 4 && i < shuffled.length; i++) opts.push(shuffled[i]);
+  return shuffle(opts);
+}
 
-        // 隨機選一個數字
-        function pickNewTarget() {
-            const lastTarget = currentTarget;
-            do {
-                currentTarget = numbers[Math.floor(Math.random() * numbers.length)];
-            } while (currentTarget === lastTarget);
-            repeatBtn.classList.remove('hidden-btn'); 
-        }
+function renderQuestion() {
+  answered = false;
+  const q = questions[currentQ];
+  document.getElementById('q-current').textContent = currentQ + 1;
+  document.getElementById('progress-bar').style.width = (currentQ / questions.length * 100) + '%';
+  document.getElementById('feedback').innerHTML = '';
 
-        // 播放語音
-        function speak(text, isRepeat = false) {
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
-                
-                const utterance = new SpeechSynthesisUtterance(text);
-                utterance.lang = 'en-US';
-                utterance.rate = 0.8;
-                
-                utterance.onstart = () => {
-                    isPlaying = true;
-                    if (isRepeat) {
-                        repeatBtn.classList.add('pulse-animation');
-                    } else {
-                        playBtn.classList.add('pulse-animation');
-                    }
-                    statusHint.textContent = isRepeat ? '正在重新朗讀...' : '正在朗讀新題目...';
-                };
+  const opts = generateOptions(q);
+  const container = document.getElementById('options');
+  container.innerHTML = '';
+  opts.forEach(o => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn pop-in rounded-xl py-4 text-center font-bold text-lg border-2 border-slate-600 bg-slate-800 text-white';
+    btn.innerHTML = `<div class="text-2xl font-900">${o.display}</div><div class="text-xs text-slate-400 mt-1">${o.word}</div>`;
+    btn.onclick = () => checkAnswer(o, q, btn, container);
+    container.appendChild(btn);
+  });
 
-                utterance.onend = () => {
-                    isPlaying = false;
-                    canGuess = true;
-                    playBtn.classList.remove('pulse-animation');
-                    repeatBtn.classList.remove('pulse-animation');
-                    statusHint.textContent = '請從下方選擇正確的數字';
-                };
+  setTimeout(() => playAudio(), 400);
+}
 
-                window.speechSynthesis.speak(utterance);
-            }
-        }
+function checkAnswer(selected, correct, btn, container) {
+  if (answered) return;
+  answered = true;
+  const isCorrect = selected.value === correct.value;
 
-        // 檢查答案
-        function checkAnswer(selected, element) {
-            if (!canGuess || isPlaying) return;
+  [...container.children].forEach(b => {
+    b.disabled = true;
+    b.classList.remove('border-slate-600');
+    const val = parseInt(b.querySelector('.text-2xl').textContent);
+    if (val === correct.value) {
+      b.classList.add('border-emerald-400', 'bg-emerald-900/40');
+    } else if (b === btn && !isCorrect) {
+      b.classList.add('border-red-400', 'bg-red-900/40', 'shake');
+    } else {
+      b.classList.add('border-slate-700', 'opacity-40');
+    }
+  });
 
-            if (selected === currentTarget) {
-                // 答對邏輯
-                score.correct++;
-                updateScoreDisplay();
-                element.classList.add('correct');
-                feedback.textContent = '答對了！太棒了！';
-                feedback.className = 'mt-8 text-center text-xl font-bold h-8 text-green-600 opacity-100';
-                canGuess = false;
-                statusHint.textContent = '答對囉！點擊播放新題目';
-                
-                setTimeout(() => {
-                    resetCards();
-                }, 1500);
-            } else {
-                // 答錯邏輯
-                if (!element.classList.contains('wrong')) {
-                    score.wrong++;
-                    updateScoreDisplay();
-                }
-                element.classList.add('wrong');
-                feedback.textContent = '不對喔，再試一次！';
-                feedback.className = 'mt-8 text-center text-xl font-bold h-8 text-red-600 opacity-100';
-                
-                setTimeout(() => {
-                    element.classList.remove('wrong');
-                    feedback.className = 'mt-8 text-center text-xl font-bold h-8 transition-opacity duration-300 opacity-0';
-                }, 1000);
-            }
-        }
+  const fb = document.getElementById('feedback');
+  if (isCorrect) {
+    score++;
+    document.getElementById('score').textContent = score;
+    fb.innerHTML = '<span class="text-emerald-400 font-bold celebrate inline-block">✅ 正確！</span>';
+  } else {
+    fb.innerHTML = `<span class="text-red-400 font-bold">❌ 答案是 ${correct.display} (${correct.word})</span>`;
+  }
 
-        function resetCards() {
-            const allCards = document.querySelectorAll('.number-card');
-            allCards.forEach(card => {
-                card.className = 'number-card bg-white border-2 border-gray-200 rounded-xl p-4 text-center font-bold text-gray-700 text-lg';
-            });
-            feedback.className = 'mt-8 text-center text-xl font-bold h-8 transition-opacity duration-300 opacity-0';
-        }
+  setTimeout(() => {
+    currentQ++;
+    if (currentQ < questions.length) {
+      renderQuestion();
+    } else {
+      showResult();
+    }
+  }, 1500);
+}
 
-        // 播放新題目
-        playBtn.onclick = () => {
-            if (!isPlaying) {
-                pickNewTarget();
-                speak(currentTarget, false);
-            }
-        };
+function showResult() {
+  document.getElementById('play-area').classList.add('hidden');
+  document.getElementById('result-screen').classList.remove('hidden');
+  document.getElementById('progress-bar').style.width = '100%';
+  document.getElementById('final-score').textContent = score;
+  document.getElementById('final-total').textContent = questions.length;
+  const pct = score / questions.length;
+  document.getElementById('final-msg').textContent = pct === 1 ? '太厲害了！滿分！🌟' : pct >= 0.7 ? '表現很棒！繼續加油！💪' : '多練習幾次會更好喔！📚';
+}
 
-        // 再次播放同一題
-        repeatBtn.onclick = () => {
-            if (!isPlaying && currentTarget) {
-                speak(currentTarget, true);
-            }
-        };
+function restartGame() {
+  currentQ = 0; score = 0;
+  document.getElementById('score').textContent = 0;
+  document.getElementById('result-screen').classList.add('hidden');
+  document.getElementById('play-area').classList.remove('hidden');
+  questions = shuffle(NUMBERS);
+  document.getElementById('q-total').textContent = questions.length;
+  renderQuestion();
+}
 
-        resetBtn.onclick = () => {
-            currentTarget = "";
-            canGuess = false;
-            isPlaying = false;
-            score = { correct: 0, wrong: 0 };
-            updateScoreDisplay();
-            repeatBtn.classList.add('hidden-btn');
-            initOptions();
-            statusHint.textContent = '點擊播放按鈕開始測驗';
-            feedback.className = 'mt-8 text-center text-xl font-bold h-8 transition-opacity duration-300 opacity-0';
-        };
+// Element SDK
+const defaultConfig = {
+  main_title: '🎧 數字聽力練習',
+  background_color: '#0f172a',
+  surface_color: '#1e293b',
+  text_color: '#ffffff',
+  primary_action_color: '#f59e0b',
+  secondary_action_color: '#94a3b8',
+  font_family: 'Nunito',
+  font_size: 16
+};
 
-        initOptions();
-    </script>
-</body>
+window.elementSdk.init({
+  defaultConfig,
+  onConfigChange: async (config) => {
+    const c = { ...defaultConfig, ...config };
+    document.getElementById('main-title').textContent = c.main_title;
+    const app = document.getElementById('app');
+    app.style.background = `linear-gradient(135deg, ${c.background_color} 0%, ${c.surface_color} 50%, ${c.background_color} 100%)`;
+    document.querySelectorAll('.option-btn').forEach(b => { b.style.backgroundColor = c.surface_color; });
+    document.getElementById('main-title').style.color = c.text_color;
+    document.getElementById('main-title').style.fontFamily = `${c.font_family}, Nunito, sans-serif`;
+    const base = c.font_size || 16;
+    document.getElementById('main-title').style.fontSize = `${base * 2}px`;
+  },
+  mapToCapabilities: (config) => ({
+    recolorables: [
+      { get: () => config.background_color || defaultConfig.background_color, set: v => { config.background_color = v; window.elementSdk.setConfig({ background_color: v }); } },
+      { get: () => config.surface_color || defaultConfig.surface_color, set: v => { config.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); } },
+      { get: () => config.text_color || defaultConfig.text_color, set: v => { config.text_color = v; window.elementSdk.setConfig({ text_color: v }); } },
+      { get: () => config.primary_action_color || defaultConfig.primary_action_color, set: v => { config.primary_action_color = v; window.elementSdk.setConfig({ primary_action_color: v }); } },
+      { get: () => config.secondary_action_color || defaultConfig.secondary_action_color, set: v => { config.secondary_action_color = v; window.elementSdk.setConfig({ secondary_action_color: v }); } }
+    ],
+    borderables: [],
+    fontEditable: { get: () => config.font_family || defaultConfig.font_family, set: v => { config.font_family = v; window.elementSdk.setConfig({ font_family: v }); } },
+    fontSizeable: { get: () => config.font_size || defaultConfig.font_size, set: v => { config.font_size = v; window.elementSdk.setConfig({ font_size: v }); } }
+  }),
+  mapToEditPanelValues: (config) => new Map([
+    ['main_title', config.main_title || defaultConfig.main_title]
+  ])
+});
+
+// Start
+questions = shuffle(NUMBERS);
+document.getElementById('q-total').textContent = questions.length;
+renderQuestion();
+lucide.createIcons();
+</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9f33ed86305b77f1',t:'MTc3NzM1Njg3OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
